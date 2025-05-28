@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { FileTransfer, TextTransfer, TransferItem } from '../types';
 import { useConnection } from './ConnectionContext';
 
+interface FileData {
+  data: Uint8Array;
+  fileName: string;
+  fileType: string;
+}
+
 interface TransferContextType {
   transfers: TransferItem[];
   clearTransfers: () => void;
@@ -15,7 +21,7 @@ const TransferContext = createContext<TransferContextType | undefined>(undefined
 export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [transfers, setTransfers] = useState<TransferItem[]>([]);
   const [pendingTransfers] = useState(new Map<string, FileTransfer>());
-  const [fileDataMap] = useState(new Map<string, { data: ArrayBuffer; fileName: string; fileType: string }>());
+  const [fileDataMap] = useState(new Map<string, FileData>());
   const { connectionState, socket } = useConnection();
 
   useEffect(() => {
@@ -105,8 +111,8 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       try {
-        // Store chunk in file data map
-        if (!fileDataMap.has(transferId)) {
+        // Store the chunk in the fileDataMap
+        if (chunkNumber === 1) {
           fileDataMap.set(transferId, {
             data: new Uint8Array(total),
             fileName: transfer.fileName,
@@ -114,32 +120,34 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           });
         }
 
+        // Get the existing data or create new array
         const fileData = fileDataMap.get(transferId);
-        if (fileData) {
-          // Copy chunk data to the correct position
-          const chunkArray = new Uint8Array(chunk as ArrayBuffer);
-          fileData.data.set(chunkArray, offset);
+        if (!fileData) {
+          console.error('No file data found for transfer:', transferId);
+          return;
+        }
 
-          // Update progress
-          const progress = Math.round((chunkNumber / totalChunks) * 100);
-          setTransfers(prev =>
-            prev.map(t =>
-              t.id === transferId && 'progress' in t
-                ? { ...t, progress, status: 'transferring' }
-                : t
-            )
-          );
+        // Copy the chunk data to the correct position
+        const chunkData = new Uint8Array(chunk as ArrayBuffer);
+        fileData.data.set(chunkData, offset);
 
-          // If this is the last chunk, mark as complete
-          if (chunkNumber === totalChunks) {
-            setTransfers(prev =>
-              prev.map(t =>
-                t.id === transferId && 'progress' in t
-                  ? { ...t, progress: 100, status: 'completed' }
-                  : t
-              )
-            );
-            pendingTransfers.delete(transferId);
+        // Update progress
+        const progress = Math.round((chunkNumber / totalChunks) * 100);
+        setTransfers(prev =>
+          prev.map(t =>
+            t.id === transferId && 'progress' in t
+              ? { ...t, progress, status: 'transferring' }
+              : t
+          )
+        );
+
+        // If this is the last chunk, mark the transfer as complete
+        if (chunkNumber === totalChunks) {
+          const transfer = pendingTransfers.get(transferId);
+          if (transfer) {
+            transfer.status = 'completed';
+            transfer.progress = 100;
+            pendingTransfers.set(transferId, transfer);
           }
         }
       } catch (error) {
@@ -247,67 +255,56 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       let chunksSent = 0;
       const totalChunks = Math.ceil(file.size / chunkSize);
 
-      const readNextChunk = () => {
+      const readNextChunk = async () => {
         const chunk = file.slice(offset, offset + chunkSize);
-        const reader = new FileReader();
+        const arrayBuffer = await chunk.arrayBuffer();
+        const chunkData = new Uint8Array(arrayBuffer);
 
-        reader.onload = (e) => {
-          const chunkData = e.target?.result;
-          if (chunkData) {
-            console.log('Sending file chunk:', { 
-              transferId: transfer.id,
-              offset,
-              total: file.size,
-              chunkSize: chunkData.byteLength,
-              chunkNumber: chunksSent + 1,
-              totalChunks
-            });
+        console.log('Sending file chunk:', { 
+          transferId: transfer.id,
+          offset,
+          total: file.size,
+          chunkSize: chunkData.byteLength,
+          chunkNumber: chunksSent + 1,
+          totalChunks
+        });
 
-            socket.emit('transfer:chunk', {
-              transferId: transfer.id,
-              chunk: chunkData,
-              offset,
-              total: file.size,
-              chunkNumber: chunksSent + 1,
-              totalChunks,
-              receiverId
-            });
+        socket.emit('transfer:chunk', {
+          transferId: transfer.id,
+          chunk: chunkData,
+          offset,
+          total: file.size,
+          chunkNumber: chunksSent + 1,
+          totalChunks,
+          chunkSize: chunkData.byteLength,
+          receiverId
+        });
 
-            offset += chunkData.byteLength;
-            chunksSent++;
-            const progress = Math.round((offset / file.size) * 100);
-            
-            // Update progress
-            setTransfers(prev =>
-              prev.map(t =>
-                t.id === transfer.id && 'progress' in t
-                  ? { ...t, progress, status: 'transferring' }
-                  : t
-              )
-            );
+        offset += chunkData.byteLength;
+        chunksSent++;
+        const progress = Math.round((offset / file.size) * 100);
+        
+        // Update progress
+        setTransfers(prev =>
+          prev.map(t =>
+            t.id === transfer.id && 'progress' in t
+              ? { ...t, progress, status: 'transferring' }
+              : t
+          )
+        );
 
-            if (offset < file.size) {
-              // Read next chunk
-              readNextChunk();
-            } else {
-              // File transfer complete
-              console.log('File transfer complete:', transfer.id);
-              socket.emit('transfer:complete', {
-                transferId: transfer.id,
-                receiverId
-              });
-              resolve(transfer.id);
-            }
-          } else {
-            reject(new Error('Failed to read file chunk'));
-          }
-        };
-
-        reader.onerror = () => {
-          reject(new Error('Failed to read file chunk'));
-        };
-
-        reader.readAsArrayBuffer(chunk);
+        if (offset < file.size) {
+          // Read next chunk
+          await readNextChunk();
+        } else {
+          // File transfer complete
+          console.log('File transfer complete:', transfer.id);
+          socket.emit('transfer:complete', {
+            transferId: transfer.id,
+            receiverId
+          });
+          resolve(transfer.id);
+        }
       };
 
       // Start reading chunks
