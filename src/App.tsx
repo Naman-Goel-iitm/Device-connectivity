@@ -2,7 +2,7 @@ import { ConnectionProvider } from './context/ConnectionContext';
 import { TransferProvider } from './context/TransferContext';
 import AppHeader from './components/AppHeader';
 import ConnectSection from './components/ConnectSection';
-import TransferSection from './components/TransferSection';
+import { TransferSection } from './components/TransferSection';
 import TransferHistory from './components/TransferHistory';
 
 function App() {

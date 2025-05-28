@@ -243,7 +243,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTransfers(prev => [...prev, transfer]);
 
     // Send transfer metadata first and wait for acknowledgment
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       socket.emit('transfer:start', {
         transfer,
         receiverId

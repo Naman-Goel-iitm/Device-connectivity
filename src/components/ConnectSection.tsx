@@ -7,8 +7,8 @@ import { useConnection } from '../context/ConnectionContext';
 import { formatRoomCode, validateRoomCode } from '../utils/roomUtils';
 
 const ConnectSection: React.FC = () => {
-  const [roomCode, setRoomCode] = useState('');
-  const [codeError, setCodeError] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [showCodeCopied, setShowCodeCopied] = useState(false);
   
   const { 
@@ -17,41 +17,34 @@ const ConnectSection: React.FC = () => {
     joinRoom, 
     leaveRoom,
     isConnecting,
-    error 
+    error: contextError 
   } = useConnection();
 
   const handleCreateRoom = async () => {
     try {
-      const code = await createRoom();
-      // Code created successfully
-    } catch (err) {
-      // Error handled in context
+      const newRoomId = await createRoom();
+      setRoomId(newRoomId);
+    } catch (error) {
+      console.error('Error creating room:', error);
     }
   };
 
   const handleJoinRoom = async () => {
-    if (!roomCode) {
-      setCodeError('Please enter a room code');
+    if (!roomId.trim()) {
+      setError('Please enter a room ID');
       return;
     }
-    
-    const formattedCode = roomCode.replace(/\s/g, '').toUpperCase();
-    
-    if (!validateRoomCode(formattedCode)) {
-      setCodeError('Invalid room code format. Please enter a 6-character code.');
-      return;
-    }
-    
-    setCodeError(null);
-    
+
     try {
-      const success = await joinRoom(formattedCode);
-      if (!success) {
-        setCodeError('Could not join room. Please check the code and try again.');
-      }
-    } catch (err) {
-      // Error handled in context
+      await joinRoom(roomId);
+      setError(null);
+    } catch (error) {
+      setError('Failed to join room. Please check the room ID and try again.');
     }
+  };
+
+  const handleCopyRoomId = () => {
+    navigator.clipboard.writeText(roomId);
   };
 
   const copyRoomCode = () => {
@@ -75,40 +68,35 @@ const ConnectSection: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button 
-                variant="primary" 
-                fullWidth 
-                leftIcon={<Plus size={18} />}
-                onClick={handleCreateRoom}
-                isLoading={isConnecting}
-              >
-                Create New Room
-              </Button>
-              
+              <div className="flex space-x-2">
+                <Input
+                  type="text"
+                  placeholder="Enter room ID"
+                  value={roomId}
+                  onChange={(e) => setRoomId(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleJoinRoom}>
+                  Join
+                </Button>
+              </div>
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or join with code</span>
+                  <span className="px-2 bg-white text-gray-500">or</span>
                 </div>
               </div>
-              
-              <Input
-                placeholder="Enter 6-digit room code"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-                error={codeError || undefined}
-                fullWidth
-              />
-              
-              <Button 
-                variant="outline" 
-                fullWidth
-                onClick={handleJoinRoom}
-                isLoading={isConnecting}
+              <Button
+                variant="outline"
+                onClick={handleCreateRoom}
+                className="w-full"
               >
-                Join Room
+                Create New Room
               </Button>
             </div>
           </CardContent>
@@ -117,9 +105,9 @@ const ConnectSection: React.FC = () => {
           </CardFooter>
         </Card>
         
-        {error && (
+        {contextError && (
           <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
-            {error}
+            {contextError}
           </div>
         )}
       </div>

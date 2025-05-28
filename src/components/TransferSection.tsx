@@ -52,17 +52,6 @@ export const TransferSection: React.FC = () => {
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const input = fileInputRef.current;
-      if (input) {
-        input.files = e.dataTransfer.files;
-        handleFilesSelected({ target: input } as React.ChangeEvent<HTMLInputElement>);
-      }
-    }
-  };
-
   if (!connectionState.connected) {
     return null;
   }
