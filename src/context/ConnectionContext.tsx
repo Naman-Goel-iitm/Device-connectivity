@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getDeviceInfo } from '../utils/deviceUtils';
-import { Device, Room, ConnectionState } from '../types';
+import { Room, ConnectionState } from '../types';
 import { generateRoomCode } from '../utils/roomUtils';
 
 interface ConnectionContextType {

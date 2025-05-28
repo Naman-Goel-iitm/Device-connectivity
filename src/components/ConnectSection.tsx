@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Wifi, Copy, Users } from 'lucide-react';
+import { Wifi, Copy, Users } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { useConnection } from '../context/ConnectionContext';
-import { formatRoomCode, validateRoomCode } from '../utils/roomUtils';
+import { formatRoomCode } from '../utils/roomUtils';
 
 const ConnectSection: React.FC = () => {
   const [roomId, setRoomId] = useState('');
@@ -16,7 +16,6 @@ const ConnectSection: React.FC = () => {
     createRoom, 
     joinRoom, 
     leaveRoom,
-    isConnecting,
     error: contextError 
   } = useConnection();
 
@@ -41,10 +40,6 @@ const ConnectSection: React.FC = () => {
     } catch (error) {
       setError('Failed to join room. Please check the room ID and try again.');
     }
-  };
-
-  const handleCopyRoomId = () => {
-    navigator.clipboard.writeText(roomId);
   };
 
   const copyRoomCode = () => {
