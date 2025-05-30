@@ -222,11 +222,24 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const leaveRoom = useCallback(() => {
     if (socket) {
+      // Emit room:leave event first
       socket.emit('room:leave');
+      // Clear connection state
+      setConnectionState(initialState);
+      // Clear any errors
+      setError(null);
+      // Disconnect socket
       socket.disconnect();
+      // Create a new socket connection
+      const newSocket = io(SOCKET_URL, {
+        transports: ['websocket'],
+        reconnectionAttempts: 3,
+        reconnectionDelay: 1000,
+        timeout: 5000,
+        forceNew: true,
+      });
+      setSocket(newSocket);
     }
-    setConnectionState(initialState);
-    setError(null);
   }, [socket]);
 
   return (

@@ -6,6 +6,7 @@ interface FileData {
   data: Uint8Array;
   fileName: string;
   fileType: string;
+  url?: string;
 }
 
 interface TransferContextType {
@@ -87,10 +88,19 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     socket.on('room:left', () => {
-      console.log('Room left, clearing transfers'); // Debug log
+      console.log('Room left, clearing all transfer data');
+      // Clear all transfers
       setTransfers([]);
+      // Clear pending transfers
       pendingTransfers.clear();
+      // Clear file data map
       fileDataMap.clear();
+      // Clear any temporary URLs
+      fileDataMap.forEach((data, id) => {
+        if (data.url) {
+          URL.revokeObjectURL(data.url);
+        }
+      });
     });
 
     socket.on('transfer:chunk', ({ transferId, chunk, offset, total, chunkNumber, totalChunks }) => {
@@ -176,6 +186,24 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       socket.off('transfer:complete');
     };
   }, [socket, transfers, pendingTransfers, fileDataMap]);
+
+  // Add cleanup function to clear data when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear all transfers
+      setTransfers([]);
+      // Clear pending transfers
+      pendingTransfers.clear();
+      // Clear file data map
+      fileDataMap.clear();
+      // Clear any temporary URLs
+      fileDataMap.forEach((data, id) => {
+        if (data.url) {
+          URL.revokeObjectURL(data.url);
+        }
+      });
+    };
+  }, [pendingTransfers, fileDataMap]);
 
   const downloadFile = (transferId: string) => {
     const fileData = fileDataMap.get(transferId);
