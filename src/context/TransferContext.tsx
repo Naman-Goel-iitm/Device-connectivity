@@ -96,7 +96,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Clear file data map
       fileDataMap.clear();
       // Clear any temporary URLs
-      fileDataMap.forEach((data, id) => {
+      fileDataMap.forEach((data) => {
         if (data.url) {
           URL.revokeObjectURL(data.url);
         }
@@ -197,7 +197,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Clear file data map
       fileDataMap.clear();
       // Clear any temporary URLs
-      fileDataMap.forEach((data, id) => {
+      fileDataMap.forEach((data) => {
         if (data.url) {
           URL.revokeObjectURL(data.url);
         }
