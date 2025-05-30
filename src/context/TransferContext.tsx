@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FileTransfer, TextTransfer, TransferItem } from '../types';
 import { useConnection } from './ConnectionContext';
 
@@ -24,6 +24,22 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [pendingTransfers] = useState(new Map<string, FileTransfer>());
   const [fileDataMap] = useState(new Map<string, FileData>());
   const { connectionState, socket } = useConnection();
+
+  const clearTransfers = useCallback(() => {
+    console.log('Clearing all transfer data');
+    // Clear all transfers
+    setTransfers([]);
+    // Clear pending transfers
+    pendingTransfers.clear();
+    // Clear file data map
+    fileDataMap.clear();
+    // Clear any temporary URLs
+    fileDataMap.forEach((data) => {
+      if (data.url) {
+        URL.revokeObjectURL(data.url);
+      }
+    });
+  }, [pendingTransfers, fileDataMap]);
 
   useEffect(() => {
     if (!socket) return;
@@ -89,18 +105,12 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     socket.on('room:left', () => {
       console.log('Room left, clearing all transfer data');
-      // Clear all transfers
-      setTransfers([]);
-      // Clear pending transfers
-      pendingTransfers.clear();
-      // Clear file data map
-      fileDataMap.clear();
-      // Clear any temporary URLs
-      fileDataMap.forEach((data) => {
-        if (data.url) {
-          URL.revokeObjectURL(data.url);
-        }
-      });
+      clearTransfers();
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected, clearing all transfer data');
+      clearTransfers();
     });
 
     socket.on('transfer:chunk', ({ transferId, chunk, offset, total, chunkNumber, totalChunks }) => {
@@ -184,26 +194,16 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       socket.off('room:left');
       socket.off('transfer:chunk');
       socket.off('transfer:complete');
+      socket.off('disconnect');
     };
-  }, [socket, transfers, pendingTransfers, fileDataMap]);
+  }, [socket, transfers, pendingTransfers, fileDataMap, clearTransfers]);
 
   // Add cleanup function to clear data when component unmounts
   useEffect(() => {
     return () => {
-      // Clear all transfers
-      setTransfers([]);
-      // Clear pending transfers
-      pendingTransfers.clear();
-      // Clear file data map
-      fileDataMap.clear();
-      // Clear any temporary URLs
-      fileDataMap.forEach((data) => {
-        if (data.url) {
-          URL.revokeObjectURL(data.url);
-        }
-      });
+      clearTransfers();
     };
-  }, [pendingTransfers, fileDataMap]);
+  }, [clearTransfers]);
 
   const downloadFile = (transferId: string) => {
     const fileData = fileDataMap.get(transferId);
@@ -387,10 +387,6 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     return transfer.id;
-  };
-
-  const clearTransfers = () => {
-    setTransfers([]);
   };
 
   return (

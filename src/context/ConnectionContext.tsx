@@ -242,6 +242,29 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [socket]);
 
+  // Handle socket disconnection
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleDisconnect = (reason: string) => {
+      console.log('Disconnected:', reason);
+      setConnectionState(initialState);
+      
+      if (reason === 'io server disconnect' || reason === 'transport close') {
+        // Server initiated disconnect or transport closed, try to reconnect
+        socket.connect();
+      }
+      
+      setError('Disconnected from server. Attempting to reconnect...');
+    };
+
+    socket.on('disconnect', handleDisconnect);
+
+    return () => {
+      socket.off('disconnect', handleDisconnect);
+    };
+  }, [socket]);
+
   return (
     <ConnectionContext.Provider 
       value={{ 
