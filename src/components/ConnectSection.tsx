@@ -16,7 +16,7 @@ const ConnectSection: React.FC = () => {
     createRoom, 
     joinRoom, 
     leaveRoom,
-    error: contextError 
+    error: contextError
   } = useConnection();
 
   const handleCreateRoom = async () => {
@@ -38,7 +38,13 @@ const ConnectSection: React.FC = () => {
       await joinRoom(roomId);
       setError(null);
     } catch (error) {
-      setError('Failed to join room. Please check the room ID and try again.');
+      // Show backend error if it's 'Room is full', otherwise show generic error
+      const errMsg = error instanceof Error ? error.message : String(error);
+      if (errMsg === 'Room is full') {
+        setError('Room is full');
+      } else {
+        setError('Failed to join room. Please check the room ID and try again.');
+      }
     }
   };
 
@@ -96,10 +102,9 @@ const ConnectSection: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-center text-sm text-gray-500">
-            Up to 3 devices can connect to a room
+            Only 2 devices can connect to a room
           </CardFooter>
         </Card>
-        
         {contextError && (
           <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
             {contextError}
@@ -142,7 +147,7 @@ const ConnectSection: React.FC = () => {
           <div>
             <div className="flex items-center text-sm text-gray-500 mb-2">
               <Users size={16} className="mr-1" />
-              <span>Connected Devices ({connectionState.devices.length}/3)</span>
+              <span>Connected Devices ({connectionState.devices.length}/2)</span>
             </div>
             <ul className="space-y-2">
               {connectionState.devices.map(device => (

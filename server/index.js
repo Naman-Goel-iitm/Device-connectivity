@@ -4,16 +4,27 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
+const allowedOrigins = [
+  'https://bolt-frontend-k834.onrender.com', // Render frontend
+  'https://winddrop.tech',                  // Custom domain
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST']
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST'],
 }));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || '*',
-    methods: ['GET', 'POST']
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
   }
 });
 
@@ -54,7 +65,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (room.devices.length >= 3) {
+    if (room.devices.length >= 2) {
       socket.emit('room:error', 'Room is full');
       return;
     }

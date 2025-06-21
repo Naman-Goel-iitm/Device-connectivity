@@ -43,7 +43,10 @@ export const TransferSection: React.FC = () => {
     }
 
     try {
-      await sendFile(files[0], receiver.id);
+      // Send each file one by one
+      for (let i = 0; i < files.length; i++) {
+        await sendFile(files[i], receiver.id);
+      }
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -103,6 +106,7 @@ export const TransferSection: React.FC = () => {
               onChange={handleFilesSelected}
               className="hidden"
               id="file-input"
+              multiple
             />
             <Button
               variant="outline"

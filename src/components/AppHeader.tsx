@@ -7,7 +7,7 @@ const AppHeader: React.FC = () => {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Wifi className="h-6 w-6 text-blue-500 mr-2" />
-          <h1 className="text-xl font-semibold text-gray-800">EasyConnect by BeingNotified</h1>
+          <h1 className="text-xl font-semibold text-gray-800">WindDrop by BeingNotified</h1>
         </div>
         
         <div className="flex items-center space-x-2">
