@@ -112,7 +112,7 @@ const TransferHistory: React.FC = () => {
         </button>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-3">
+        <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
           {sortedTransfers.map(transfer => (
             <li 
               key={transfer.id} 

@@ -16,7 +16,8 @@ const ConnectSection: React.FC = () => {
     createRoom, 
     joinRoom, 
     leaveRoom,
-    error: contextError
+    error: contextError,
+    serverConnected
   } = useConnection();
 
   const handleCreateRoom = async () => {
@@ -60,6 +61,11 @@ const ConnectSection: React.FC = () => {
   if (!connectionState.connected) {
     return (
       <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
+        {!serverConnected && (
+          <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md text-center text-sm font-medium border border-yellow-200">
+            Waking up the server, this may take a few seconds...
+          </div>
+        )}
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -95,7 +101,8 @@ const ConnectSection: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={handleCreateRoom}
-                className="w-full"
+                className={`w-full ${!serverConnected ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300' : ''}`}
+                disabled={!serverConnected}
               >
                 Create New Room
               </Button>
@@ -105,7 +112,7 @@ const ConnectSection: React.FC = () => {
             Only 2 devices can connect to a room
           </CardFooter>
         </Card>
-        {contextError && (
+        {contextError && serverConnected && (
           <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
             {contextError}
           </div>

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ConnectionProvider } from './context/ConnectionContext';
 import { TransferProvider } from './context/TransferContext';
 import AppHeader from './components/AppHeader';
@@ -32,7 +31,7 @@ function App() {
           <AppHeader />
           <main className="container mx-auto px-4 py-8">
             <div className="grid gap-8 md:grid-cols-2">
-              <div>
+              <div className="flex flex-col gap-6">
                 <ConnectSection />
                 <TransferSection />
               </div>

@@ -12,6 +12,7 @@ interface ConnectionContextType {
   isConnecting: boolean;
   error: string | null;
   socket: Socket | null;
+  serverConnected: boolean;
 }
 
 const initialState: ConnectionState = {
@@ -31,6 +32,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [serverConnected, setServerConnected] = useState(false);
 
   // Initialize socket connection with enhanced retry logic
   useEffect(() => {
@@ -45,6 +47,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       newSocket.on('connect_error', (err) => {
         console.error('Connection error:', err);
+        setServerConnected(false);
         
         if (retryCount < 2) {
           // Try fallback to polling if WebSocket fails
@@ -69,6 +72,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         console.log('Successfully connected to server');
         setError(null);
         setRetryCount(0);
+        setServerConnected(true);
       });
 
       setSocket(newSocket);
@@ -90,6 +94,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     socket.on('connect', () => {
       console.log('Connected to server');
       setError(null);
+      setServerConnected(true);
     });
 
     socket.on('room:joined', (data: { room: Room; isHost: boolean }) => {
@@ -119,6 +124,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     socket.on('disconnect', (reason) => {
       console.log('Disconnected:', reason);
       setConnectionState(initialState);
+      setServerConnected(false);
       
       if (reason === 'io server disconnect' || reason === 'transport close') {
         // Server initiated disconnect or transport closed, try to reconnect
@@ -249,6 +255,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleDisconnect = (reason: string) => {
       console.log('Disconnected:', reason);
       setConnectionState(initialState);
+      setServerConnected(false);
       
       if (reason === 'io server disconnect' || reason === 'transport close') {
         // Server initiated disconnect or transport closed, try to reconnect
@@ -274,7 +281,8 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         leaveRoom,
         isConnecting,
         error,
-        socket
+        socket,
+        serverConnected
       }}
     >
       {children}
