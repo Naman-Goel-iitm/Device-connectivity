@@ -4,7 +4,10 @@ import AppHeader from './components/AppHeader';
 import ConnectSection from './components/ConnectSection';
 import { TransferSection } from './components/TransferSection';
 import TransferHistory from './components/TransferHistory';
-import { useState, useEffect } from 'react';
+import Instructions from './components/Instructions';
+import { useState, useEffect, useRef } from 'react';
+import { useConnection } from './context/ConnectionContext';
+import { useShakeBackground } from './hooks/useShakeBackground';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -26,21 +29,82 @@ function App() {
 
   return (
     <ConnectionProvider>
-      <TransferProvider>
-        <div className="min-h-screen bg-gray-50">
+      <AppContent />
+    </ConnectionProvider>
+  );
+}
+
+function AppContent() {
+  const { connectionState } = useConnection();
+  const mobileBg = useShakeBackground();
+  const isMobile = /iphone|ipad|ipod|android|blackberry|windows phone/i.test(navigator.userAgent.toLowerCase());
+
+  // Fade transition state for mobile background
+  const [prevBg, setPrevBg] = useState(mobileBg);
+  const [fade, setFade] = useState(false);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    if (mobileBg !== prevBg) {
+      setFade(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => {
+        setPrevBg(mobileBg);
+        setFade(false);
+      }, 500); // 500ms fade duration
+    }
+    // Cleanup on unmount
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [mobileBg, isMobile, prevBg]);
+
+  return (
+    <TransferProvider>
+      <div className="relative min-h-screen">
+        {isMobile ? (
+          <>
+            {/* Previous background (fading out) */}
+            <div
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-500 ${fade ? 'opacity-0' : 'opacity-100'}`}
+              style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
+            ></div>
+            {/* New background (fading in) */}
+            {fade && (
+              <div
+                className="absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-500 opacity-100"
+                style={{ backgroundImage: `url('${mobileBg}')`, zIndex: 2 }}
+              ></div>
+            )}
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-custom-bg bg-cover bg-center blur-sm"></div>
+        )}
+        <div className="absolute inset-0 bg-black opacity-30"></div>
+        <div className="relative z-10">
           <AppHeader />
-          <main className="container mx-auto px-4 py-8">
-            <div className="grid gap-8 md:grid-cols-2">
-              <div className="flex flex-col gap-6">
-                <ConnectSection />
-                <TransferSection />
-              </div>
-              <TransferHistory />
+          <main className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-8 items-start">
+            <div className="flex flex-col gap-6">
+              <ConnectSection />
+              <TransferSection />
+            </div>
+            <div>
+              {!connectionState.connected ? (
+                <div className="relative h-full flex items-center">
+                  <div className="absolute left-0 h-4/5 w-px bg-gray-300"></div>
+                  <div className="pl-8 bg-black bg-opacity-20 backdrop-blur-sm p-6 rounded-lg">
+                    <Instructions />
+                  </div>
+                </div>
+              ) : (
+                <TransferHistory />
+              )}
             </div>
           </main>
         </div>
-      </TransferProvider>
-    </ConnectionProvider>
+      </div>
+    </TransferProvider>
   );
 }
 

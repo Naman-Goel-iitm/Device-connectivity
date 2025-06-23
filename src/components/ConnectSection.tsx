@@ -63,7 +63,7 @@ const ConnectSection: React.FC = () => {
       <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
         {!serverConnected && (
           <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md text-center text-sm font-medium border border-yellow-200">
-            Waking up the server, this may take a few seconds...
+            ⚡Waking up the server… it would just take a few seconds to load
           </div>
         )}
         <Card className="w-full">

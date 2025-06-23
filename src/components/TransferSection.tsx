@@ -12,6 +12,7 @@ export const TransferSection: React.FC = () => {
   const [text, setText] = useState('');
   const [isLink, setIsLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleTextSend = async () => {
     if (!text.trim()) return;
@@ -55,6 +56,38 @@ export const TransferSection: React.FC = () => {
     }
   };
 
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    // Find a receiver that is not the current device
+    const receiver = connectionState.devices.find(d => d.socketId !== socket?.id);
+    if (!receiver) {
+      console.error('No devices connected');
+      return;
+    }
+    try {
+      for (let i = 0; i < files.length; i++) {
+        await sendFile(files[i], receiver.id);
+      }
+    } catch (error) {
+      console.error('Error sending file:', error);
+    }
+  };
+
   if (!connectionState.connected) {
     return null;
   }
@@ -65,7 +98,12 @@ export const TransferSection: React.FC = () => {
         <CardTitle>Send Files or Text</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div
+          className={`space-y-4 transition-all duration-200 ${isDragging ? 'border-2 border-blue-500 bg-blue-50' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <div className="flex items-center space-x-2">
             <Button
               variant={isLink ? 'outline' : 'primary'}
@@ -114,7 +152,7 @@ export const TransferSection: React.FC = () => {
               className="flex-1"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Select File
+              Select Files/Drag & Drop
             </Button>
           </div>
         </div>
