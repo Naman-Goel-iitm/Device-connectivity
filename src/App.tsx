@@ -41,25 +41,23 @@ function AppContent() {
 
   // Fade transition state for mobile background
   const [prevBg, setPrevBg] = useState(mobileBg);
-  const [showBg, setShowBg] = useState(mobileBg);
   const [fade, setFade] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isMobile) return;
-    if (mobileBg !== showBg) {
-      setPrevBg(showBg); // previous visible
-      setShowBg(mobileBg); // new visible
+    if (mobileBg !== prevBg) {
       setFade(true);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = window.setTimeout(() => {
+        setPrevBg(mobileBg);
         setFade(false);
-      }, 600); // 600ms fade duration
+      }, 1200); // 1200ms fade duration
     }
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [mobileBg, isMobile, showBg]);
+  }, [mobileBg, isMobile, prevBg]);
 
   return (
     <TransferProvider>
@@ -74,7 +72,7 @@ function AppContent() {
             {/* New background (fading in) */}
             <div
               className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
-              style={{ backgroundImage: `url('${showBg}')`, zIndex: 2 }}
+              style={{ backgroundImage: `url('${mobileBg}')`, zIndex: 2 }}
             ></div>
           </div>
         ) : (
