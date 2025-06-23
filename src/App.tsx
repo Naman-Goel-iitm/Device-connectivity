@@ -85,8 +85,8 @@ function AppContent() {
         ) : (
           <div className="absolute inset-0 bg-custom-bg bg-cover bg-center blur-sm"></div>
         )}
-        {/* Mini hovering note for mobile, always visible if isMobile */}
-        {isMobile && (
+        {/* Mini hovering note for mobile, only visible if isMobile and not connected to a room */}
+        {isMobile && !connectionState.connected && (
           <div className="fixed bottom-6 right-6 z-50 flex items-end select-none pointer-events-none animate-bounce-smooth">
             <div className="relative bg-white text-blue-600 font-bold text-base px-4 py-2 rounded-2xl shadow-lg" style={{ maxWidth: '50vw', minWidth: '120px' }}>
               <span className="align-middle">Shake your Phone !😃</span>
