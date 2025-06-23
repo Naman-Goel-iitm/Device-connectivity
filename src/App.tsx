@@ -68,12 +68,12 @@ function AppContent() {
           <div className="absolute inset-0 w-full h-full">
             {/* Previous background (fading out) */}
             <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-700 ${fade ? 'opacity-0' : 'opacity-100'}`}
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
               style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
             ></div>
             {/* New background (fading in) */}
             <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-700 ${fade ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
               style={{ backgroundImage: `url('${showBg}')`, zIndex: 2 }}
             ></div>
           </div>
