@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
 const phoneBackgrounds = [
-  '/background_phone_2.jpg',
-  '/background_phone_1.jpg',
   '/background_phone_3.jpg',
+  '/background_phone_1.jpg',
+  '/background_phone_2.jpg',
   '/background_phone_4.jpg',
   '/background_phone_5.jpg',
 ];
 
 // Simple shake detection config
-const SHAKE_THRESHOLD = 25; // Slightly more sensitive to shakes
+const SHAKE_THRESHOLD = 30; // Less sensitive, requires a stronger shake
 const SHAKE_TIMEOUT = 1000; // ms
 
 export function useShakeBackground() {

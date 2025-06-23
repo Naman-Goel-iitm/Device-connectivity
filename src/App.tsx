@@ -45,7 +45,7 @@ function AppContent() {
   const [fade, setFade] = useState(false);
   const queueRef = useRef<string[]>([]);
   const timeoutRef = useRef<number | null>(null);
-  const FADE_DURATION = 1200;
+  const FADE_DURATION = 600;
 
   // Handle background change requests
   useEffect(() => {
@@ -91,13 +91,13 @@ function AppContent() {
           <div className="absolute inset-0 w-full h-full">
             {/* Previous background (fading out) */}
             <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
               style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
             ></div>
             {/* Next background (fading in) */}
             {nextBg && (
               <div
-                className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
                 style={{ backgroundImage: `url('${nextBg}')`, zIndex: 2 }}
               ></div>
             )}
@@ -108,11 +108,11 @@ function AppContent() {
         {/* Mini hovering note for mobile, always visible if isMobile */}
         {isMobile && (
           <div className="fixed bottom-6 right-6 z-50 flex items-end select-none pointer-events-none animate-bounce-smooth">
-            <div className="relative bg-white text-blue-600 font-bold text-lg px-6 py-3 rounded-2xl shadow-lg" style={{ maxWidth: '80vw', minWidth: '220px' }}>
-              <span className="align-middle">Shake your Phone !</span>
-              <span className="ml-2 text-2xl align-middle">😃</span>
+            <div className="relative bg-white text-blue-600 font-bold text-base px-4 py-2 rounded-2xl shadow-lg" style={{ maxWidth: '50vw', minWidth: '120px' }}>
+              <span className="align-middle">Shake your Phone !😃</span>
+              {/* <span className="ml-1 text-xl align-middle">😃</span> */}
               {/* Pointy chat bubble tail */}
-              <span className="absolute -bottom-2 right-3 w-5 h-5 bg-white border-b border-r border-gray-200 shadow-lg" style={{ borderBottomRightRadius: '0.75rem', transform: 'rotate(45deg)' }}></span>
+              <span className="absolute -bottom-2 right-2 w-3 h-3 bg-white border-b border-r border-gray-200 shadow-lg" style={{ borderBottomRightRadius: '0.75rem', transform: 'rotate(45deg)' }}></span>
             </div>
           </div>
         )}
