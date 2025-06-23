@@ -39,66 +39,46 @@ function AppContent() {
   const mobileBg = useShakeBackground();
   const isMobile = /iphone|ipad|ipod|android|blackberry|windows phone/i.test(navigator.userAgent.toLowerCase());
 
-  // Fade transition state for mobile background
-  const [prevBg, setPrevBg] = useState(mobileBg);
-  const [nextBg, setNextBg] = useState<string | null>(null);
-  const [fade, setFade] = useState(false);
-  const queueRef = useRef<string[]>([]);
+  // Two-step fade transition state
+  const [currentBg, setCurrentBg] = useState(mobileBg);
+  const [fadeOut, setFadeOut] = useState(false);
+  const [pendingBg, setPendingBg] = useState<string | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const FADE_DURATION = 600;
 
-  // Handle background change requests
+  // When mobileBg changes, start fade out
   useEffect(() => {
     if (!isMobile) return;
-    if (mobileBg !== prevBg && mobileBg !== nextBg) {
-      // If a transition is in progress, queue the new background
-      if (fade) {
-        queueRef.current.push(mobileBg);
-      } else {
-        setNextBg(mobileBg);
-        setFade(true);
-      }
+    if (mobileBg !== currentBg) {
+      setFadeOut(true);
+      setPendingBg(mobileBg);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => {
+        setCurrentBg(mobileBg);
+        setFadeOut(false);
+        setPendingBg(null);
+      }, FADE_DURATION);
     }
-    // Cleanup on unmount
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [mobileBg, isMobile, prevBg, nextBg, fade]);
-
-  // Handle the end of a fade transition
-  useEffect(() => {
-    if (!fade || !nextBg) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => {
-      setPrevBg(nextBg);
-      setFade(false);
-      setNextBg(null);
-      // If there are queued backgrounds, start the next transition
-      if (queueRef.current.length > 0) {
-        const next = queueRef.current.pop();
-        if (next && next !== prevBg) {
-          setNextBg(next);
-          setFade(true);
-        }
-      }
-    }, FADE_DURATION);
-  }, [fade, nextBg, prevBg]);
+  }, [mobileBg, isMobile, currentBg]);
 
   return (
     <TransferProvider>
       <div className="relative min-h-screen">
         {isMobile ? (
           <div className="absolute inset-0 w-full h-full">
-            {/* Previous background (fading out) */}
+            {/* Current background (fading out) */}
             <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
-              style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
+              style={{ backgroundImage: `url('${currentBg}')`, zIndex: 1 }}
             ></div>
-            {/* Next background (fading in) */}
-            {nextBg && (
+            {/* Pending background (fading in) - only render after fade out */}
+            {fadeOut && pendingBg && (
               <div
-                className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
-                style={{ backgroundImage: `url('${nextBg}')`, zIndex: 2 }}
+                className="absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[600ms] ease-in-out opacity-100"
+                style={{ backgroundImage: `url('${pendingBg}')`, zIndex: 2 }}
               ></div>
             )}
           </div>
@@ -110,7 +90,6 @@ function AppContent() {
           <div className="fixed bottom-6 right-6 z-50 flex items-end select-none pointer-events-none animate-bounce-smooth">
             <div className="relative bg-white text-blue-600 font-bold text-base px-4 py-2 rounded-2xl shadow-lg" style={{ maxWidth: '50vw', minWidth: '120px' }}>
               <span className="align-middle">Shake your Phone !😃</span>
-              {/* <span className="ml-1 text-xl align-middle">😃</span> */}
               {/* Pointy chat bubble tail */}
               <span className="absolute -bottom-2 right-2 w-3 h-3 bg-white border-b border-r border-gray-200 shadow-lg" style={{ borderBottomRightRadius: '0.75rem', transform: 'rotate(45deg)' }}></span>
             </div>
