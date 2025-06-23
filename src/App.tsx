@@ -41,43 +41,42 @@ function AppContent() {
 
   // Fade transition state for mobile background
   const [prevBg, setPrevBg] = useState(mobileBg);
+  const [showBg, setShowBg] = useState(mobileBg);
   const [fade, setFade] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isMobile) return;
-    if (mobileBg !== prevBg) {
+    if (mobileBg !== showBg) {
+      setPrevBg(showBg); // previous visible
+      setShowBg(mobileBg); // new visible
       setFade(true);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = window.setTimeout(() => {
-        setPrevBg(mobileBg);
         setFade(false);
-      }, 500); // 500ms fade duration
+      }, 600); // 600ms fade duration
     }
-    // Cleanup on unmount
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [mobileBg, isMobile, prevBg]);
+  }, [mobileBg, isMobile, showBg]);
 
   return (
     <TransferProvider>
       <div className="relative min-h-screen">
         {isMobile ? (
-          <>
+          <div className="absolute inset-0 w-full h-full">
             {/* Previous background (fading out) */}
             <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-500 ${fade ? 'opacity-0' : 'opacity-100'}`}
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-700 ${fade ? 'opacity-0' : 'opacity-100'}`}
               style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
             ></div>
             {/* New background (fading in) */}
-            {fade && (
-              <div
-                className="absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-500 opacity-100"
-                style={{ backgroundImage: `url('${mobileBg}')`, zIndex: 2 }}
-              ></div>
-            )}
-          </>
+            <div
+              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-700 ${fade ? 'opacity-100' : 'opacity-0'}`}
+              style={{ backgroundImage: `url('${showBg}')`, zIndex: 2 }}
+            ></div>
+          </div>
         ) : (
           <div className="absolute inset-0 bg-custom-bg bg-cover bg-center blur-sm"></div>
         )}
