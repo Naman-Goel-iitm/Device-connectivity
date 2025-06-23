@@ -41,40 +41,73 @@ function AppContent() {
 
   // Fade transition state for mobile background
   const [prevBg, setPrevBg] = useState(mobileBg);
+  const [nextBg, setNextBg] = useState<string | null>(null);
   const [fade, setFade] = useState(false);
+  const queueRef = useRef<string[]>([]);
   const timeoutRef = useRef<number | null>(null);
+  const FADE_DURATION = 1200;
 
+  // Handle background change requests
   useEffect(() => {
     if (!isMobile) return;
-    if (mobileBg !== prevBg) {
-      setFade(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = window.setTimeout(() => {
-        setPrevBg(mobileBg);
-        setFade(false);
-      }, 1200); // 1200ms fade duration
+    if (mobileBg !== prevBg && mobileBg !== nextBg) {
+      // If a transition is in progress, queue the new background
+      if (fade) {
+        queueRef.current.push(mobileBg);
+      } else {
+        setNextBg(mobileBg);
+        setFade(true);
+      }
     }
+    // Cleanup on unmount
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [mobileBg, isMobile, prevBg]);
+  }, [mobileBg, isMobile, prevBg, nextBg, fade]);
+
+  // Handle the end of a fade transition
+  useEffect(() => {
+    if (!fade || !nextBg) return;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => {
+      setPrevBg(nextBg);
+      setFade(false);
+      setNextBg(null);
+      // If there are queued backgrounds, start the next transition
+      if (queueRef.current.length > 0) {
+        const next = queueRef.current.pop();
+        if (next && next !== prevBg) {
+          setNextBg(next);
+          setFade(true);
+        }
+      }
+    }, FADE_DURATION);
+  }, [fade, nextBg, prevBg]);
 
   return (
     <TransferProvider>
       <div className="relative min-h-screen">
         {isMobile ? (
-          <div className="absolute inset-0 w-full h-full">
-            {/* Previous background (fading out) */}
-            <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
-              style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
-            ></div>
-            {/* New background (fading in) */}
-            <div
-              className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
-              style={{ backgroundImage: `url('${mobileBg}')`, zIndex: 2 }}
-            ></div>
-          </div>
+          <>
+            <div className="absolute inset-0 w-full h-full">
+              {/* Previous background (fading out) */}
+              <div
+                className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
+                style={{ backgroundImage: `url('${prevBg}')`, zIndex: 1 }}
+              ></div>
+              {/* Next background (fading in) */}
+              {nextBg && (
+                <div
+                  className={`absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-[1200ms] ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ backgroundImage: `url('${nextBg}')`, zIndex: 2 }}
+                ></div>
+              )}
+            </div>
+            {/* Mini hovering note for mobile */}
+            <div className="fixed bottom-4 left-4 z-50 bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded-full shadow-lg animate-bounce pointer-events-none select-none">
+              shake your phone!
+            </div>
+          </>
         ) : (
           <div className="absolute inset-0 bg-custom-bg bg-cover bg-center blur-sm"></div>
         )}

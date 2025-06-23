@@ -9,7 +9,7 @@ const phoneBackgrounds = [
 ];
 
 // Simple shake detection config
-const SHAKE_THRESHOLD = 28; // Less sensitive to small movements
+const SHAKE_THRESHOLD = 25; // Slightly more sensitive to shakes
 const SHAKE_TIMEOUT = 1000; // ms
 
 export function useShakeBackground() {
