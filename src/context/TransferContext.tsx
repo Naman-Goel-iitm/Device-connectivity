@@ -15,6 +15,7 @@ interface TransferContextType {
   sendText: (content: string, receiverId: string, type: 'text' | 'link') => Promise<string>;
   sendFile: (file: File, receiverId: string) => Promise<string>;
   downloadFile: (transferId: string) => void;
+  error: string | null;
 }
 
 const TransferContext = createContext<TransferContextType | undefined>(undefined);
@@ -417,7 +418,8 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       clearTransfers,
       sendText,
       sendFile,
-      downloadFile
+      downloadFile,
+      error
     }}>
       {children}
     </TransferContext.Provider>

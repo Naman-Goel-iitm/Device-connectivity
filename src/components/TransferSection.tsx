@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { FileText, Link, MessageSquare } from 'lucide-react';
 
 export const TransferSection: React.FC = () => {
-  const { sendText, sendFile } = useTransfer();
+  const { sendText, sendFile, error } = useTransfer();
   const { connectionState, socket } = useConnection();
   const [text, setText] = useState('');
   const [isLink, setIsLink] = useState(false);
@@ -156,6 +156,9 @@ export const TransferSection: React.FC = () => {
             </Button>
           </div>
         </div>
+        {error && (
+          <div className="text-red-500 text-sm mt-2 px-4">{error}</div>
+        )}
       </CardContent>
     </Card>
   );
