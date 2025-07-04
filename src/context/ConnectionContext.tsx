@@ -38,10 +38,10 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     const connectSocket = () => {
       const newSocket = io(SOCKET_URL, {
-        transports: ['websocket'],
+        transports: ['polling', 'websocket'], // Try polling first, then WebSocket
         reconnectionAttempts: 3,
         reconnectionDelay: 1000,
-        timeout: 5000,
+        timeout: 10000, // Increased timeout
         forceNew: true,
       });
 
@@ -50,13 +50,13 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setServerConnected(false);
         
         if (retryCount < 2) {
-          // Try fallback to polling if WebSocket fails
-          console.log('Retrying with polling transport...');
+          // Try fallback to polling only if both fail
+          console.log('Retrying with polling transport only...');
           const fallbackSocket = io(SOCKET_URL, {
-            transports: ['polling'],
+            transports: ['polling'], // Force polling only
             reconnectionAttempts: 3,
             reconnectionDelay: 1000,
-            timeout: 5000,
+            timeout: 10000,
             forceNew: true,
           });
           

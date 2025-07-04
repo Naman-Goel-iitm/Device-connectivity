@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const app = express();
 const allowedOrigins = [
+  // 'http://localhost:5173',                // Local development (removed for production)
   'https://bolt-frontend-k834.onrender.com', // Render frontend
   'https://winddrop.tech',                  // Custom domain
 ];
@@ -172,7 +173,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('transfer:chunk', ({ transferId, chunk, offset, total, chunkNumber, totalChunks, receiverId }) => {
+  socket.on('transfer:chunk', ({ transferId, chunk, offset, total, chunkNumber, totalChunks, receiverId }, ack) => {
     console.log('Received file chunk:', { 
       transferId, 
       offset, 
@@ -197,6 +198,7 @@ io.on('connection', (socket) => {
         // Make sure we're not sending to ourselves
         if (receiver.socketId === socket.id) {
           console.log('Preventing self-transfer of file');
+          if (ack) ack();
           return;
         }
 
@@ -221,11 +223,14 @@ io.on('connection', (socket) => {
           chunkNumber,
           totalChunks
         });
+        if (ack) ack(); // Acknowledge to sender
       } else {
         console.log('Receiver not found in room for file transfer');
+        if (ack) ack();
       }
     } else {
       console.log('Room not found for sender of file transfer');
+      if (ack) ack();
     }
   });
 

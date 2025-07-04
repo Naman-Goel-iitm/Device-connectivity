@@ -24,6 +24,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [pendingTransfers] = useState(new Map<string, FileTransfer>());
   const [fileDataMap] = useState(new Map<string, FileData>());
   const { connectionState, socket } = useConnection();
+  const [error, setError] = useState<string | null>(null);
 
   const clearTransfers = useCallback(() => {
     console.log('Clearing all transfer data');
@@ -271,19 +272,34 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTransfers(prev => [...prev, transfer]);
 
     // Send transfer metadata first and wait for acknowledgment
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       socket.emit('transfer:start', {
         transfer,
         receiverId
       });
 
-      // Read and send the file in chunks
-      const chunkSize = 64 * 1024; // 64KB chunks
+      // Read and send the file in chunks with flow control and retry
+      const chunkSize = 16 * 1024; // 16KB chunks
       let offset = 0;
       let chunksSent = 0;
       const totalChunks = Math.ceil(file.size / chunkSize);
+      let aborted = false;
+      let retries = 0;
+      const MAX_RETRIES = 3;
+      const CHUNK_ACK_TIMEOUT = 10000; // 10 seconds
 
-      const readNextChunk = async () => {
+      const sendChunk = async () => {
+        if (aborted) return;
+        if (offset >= file.size) {
+          // File transfer complete
+          console.log('File transfer complete:', transfer.id);
+          socket.emit('transfer:complete', {
+            transferId: transfer.id,
+            receiverId
+          });
+          resolve(transfer.id);
+          return;
+        }
         const chunk = file.slice(offset, offset + chunkSize);
         const arrayBuffer = await chunk.arrayBuffer();
         const chunkData = new Uint8Array(arrayBuffer);
@@ -297,6 +313,21 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           totalChunks
         });
 
+        let acked = false;
+        const ackTimeout = setTimeout(() => {
+          if (!acked) {
+            if (retries < MAX_RETRIES) {
+              retries++;
+              console.warn(`Chunk ack timeout, retrying (${retries}/${MAX_RETRIES})...`);
+              sendChunk(); // retry
+            } else {
+              aborted = true;
+              setError('File transfer failed: network issue or receiver disconnected.');
+              reject(new Error('File transfer failed: network issue or receiver disconnected.'));
+            }
+          }
+        }, CHUNK_ACK_TIMEOUT);
+
         socket.emit('transfer:chunk', {
           transferId: transfer.id,
           chunk: chunkData,
@@ -306,37 +337,28 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           totalChunks,
           chunkSize: chunkData.byteLength,
           receiverId
+        }, () => {
+          if (aborted) return;
+          acked = true;
+          clearTimeout(ackTimeout);
+          retries = 0;
+          offset += chunkData.byteLength;
+          chunksSent++;
+          const progress = Math.round((offset / file.size) * 100);
+          // Update progress
+          setTransfers(prev =>
+            prev.map(t =>
+              t.id === transfer.id && 'progress' in t
+                ? { ...t, progress, status: 'transferring' }
+                : t
+            )
+          );
+          sendChunk();
         });
-
-        offset += chunkData.byteLength;
-        chunksSent++;
-        const progress = Math.round((offset / file.size) * 100);
-        
-        // Update progress
-        setTransfers(prev =>
-          prev.map(t =>
-            t.id === transfer.id && 'progress' in t
-              ? { ...t, progress, status: 'transferring' }
-              : t
-          )
-        );
-
-        if (offset < file.size) {
-          // Read next chunk
-          await readNextChunk();
-        } else {
-          // File transfer complete
-          console.log('File transfer complete:', transfer.id);
-          socket.emit('transfer:complete', {
-            transferId: transfer.id,
-            receiverId
-          });
-          resolve(transfer.id);
-        }
       };
 
-      // Start reading chunks
-      readNextChunk();
+      // Start sending chunks with flow control and retry
+      sendChunk();
     });
   };
 
