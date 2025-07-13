@@ -4,10 +4,14 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 const allowedOrigins = [
   // 'http://localhost:5173',                // Local development (removed for production)
   'https://bolt-frontend-k834.onrender.com', // Render frontend
   'https://winddrop.tech',                  // Custom domain
+  'http://139.59.38.179:3000',             // DigitalOcean server
+  'https://139.59.38.179:3000',            // DigitalOcean server (HTTPS)
 ];
 
 app.use(cors({
@@ -336,7 +340,6 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 }); 
