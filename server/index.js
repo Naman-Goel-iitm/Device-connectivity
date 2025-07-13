@@ -10,7 +10,7 @@ const allowedOrigins = [
   // 'http://localhost:5173',                // Local development (removed for production)
   'https://bolt-frontend-k834.onrender.com', // Render frontend
   'https://winddrop.tech',                  // Custom domain
-  'http://139.59.38.179:3000',             // DigitalOcean server
+  'http://139.59.38.179:3000',             // DigitalOcean server (HTTP)
   'https://139.59.38.179:3000',            // DigitalOcean server (HTTPS)
 ];
 
