@@ -22,7 +22,7 @@ const initialState: ConnectionState = {
   isHost: false,
 };
 
-const SOCKET_URL = 'https://winddrop.tech';
+const SOCKET_URL = 'https://api.winddrop.tech';
 
 const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
 
