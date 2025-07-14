@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Clock, FileText, Link as LinkIcon, Check, X, MessageSquare, Download, Copy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { useTransfer } from '../context/TransferContext';
-import { formatFileSize } from '../utils/deviceUtils';
+import { formatFileSize, isMobileDevice } from '../utils/deviceUtils';
 import { useConnection } from '../context/ConnectionContext';
 import { formatTime } from '../utils/date';
 
@@ -29,8 +29,10 @@ const TransferHistory: React.FC = () => {
 
   const handleDownload = (transferId: string) => {
     downloadFile(transferId);
-    setShowDownloadToast(true);
-    setTimeout(() => setShowDownloadToast(false), 2000);
+    if (isMobileDevice()) {
+      setShowDownloadToast(true);
+      setTimeout(() => setShowDownloadToast(false), 2000);
+    }
   };
 
   const getTransferIcon = (transfer: any) => {

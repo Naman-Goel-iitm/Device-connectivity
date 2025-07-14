@@ -16,6 +16,13 @@ export const getDeviceInfo = (): Omit<Device, 'isHost'> => {
 };
 
 /**
+ * Returns true if the current device is a mobile device
+ */
+export const isMobileDevice = (): boolean => {
+  return /iphone|ipad|ipod|android|blackberry|windows phone/i.test(navigator.userAgent.toLowerCase());
+};
+
+/**
  * Format file size to human-readable format
  */
 export const formatFileSize = (bytes: number): string => {
