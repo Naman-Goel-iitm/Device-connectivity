@@ -136,7 +136,7 @@ function AppContent() {
         </div>
         {/* T&C link at the bottom, styled bold and without background strip */}
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
-          <Link to="/terms" className="text-sm font-semibold text-gray-600 hover:text-blue-700 underline transition-colors">T&amp;C</Link>
+          <Link to="/terms" className="text-sm font-semibold text-white hover:text-blue-300 underline transition-colors">T&amp;C</Link>
         </div>
       </div>
     </TransferProvider>
