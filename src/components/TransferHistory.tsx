@@ -183,7 +183,7 @@ const TransferHistory: React.FC = () => {
         </ul>
       </CardContent>
       {showDownloadToast && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50">
           Download started!
         </div>
       )}

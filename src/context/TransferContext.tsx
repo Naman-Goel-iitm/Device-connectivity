@@ -280,7 +280,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
 
       // Read and send the file in chunks with flow control and retry
-      const chunkSize = 32 * 1024; // 32KB chunks
+      const chunkSize = 512 * 1024; // 512KB chunks
       let offset = 0;
       let chunksSent = 0;
       const totalChunks = Math.ceil(file.size / chunkSize);
