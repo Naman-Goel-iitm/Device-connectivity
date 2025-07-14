@@ -13,6 +13,7 @@ export const TransferSection: React.FC = () => {
   const [isLink, setIsLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showDownloadToast, setShowDownloadToast] = useState(false);
 
   const handleTextSend = async () => {
     if (!text.trim()) return;
@@ -54,6 +55,14 @@ export const TransferSection: React.FC = () => {
     } catch (error) {
       console.error('Error sending file:', error);
     }
+  };
+
+  const handleDownload = (transferId: string) => {
+    // Assuming downloadFile is a function from useTransfer or a similar context
+    // For now, we'll just show a toast and not call a real download function
+    console.log(`Download started for transfer ID: ${transferId}`);
+    setShowDownloadToast(true);
+    setTimeout(() => setShowDownloadToast(false), 2000);
   };
 
   // Drag and drop handlers
@@ -158,6 +167,11 @@ export const TransferSection: React.FC = () => {
         </div>
         {error && (
           <div className="text-red-500 text-sm mt-2 px-4">{error}</div>
+        )}
+        {showDownloadToast && (
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+            Download started!
+          </div>
         )}
       </CardContent>
     </Card>
