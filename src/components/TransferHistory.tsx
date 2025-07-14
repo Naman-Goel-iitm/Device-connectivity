@@ -10,6 +10,7 @@ const TransferHistory: React.FC = () => {
   const { transfers, clearTransfers, downloadFile } = useTransfer();
   const { connectionState } = useConnection();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showDownloadToast, setShowDownloadToast] = useState(false);
   
   if (!connectionState.connected || transfers.length === 0) {
     return null;
@@ -24,6 +25,12 @@ const TransferHistory: React.FC = () => {
     navigator.clipboard.writeText(content);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDownload = (transferId: string) => {
+    downloadFile(transferId);
+    setShowDownloadToast(true);
+    setTimeout(() => setShowDownloadToast(false), 2000);
   };
 
   const getTransferIcon = (transfer: any) => {
@@ -161,7 +168,7 @@ const TransferHistory: React.FC = () => {
               {'progress' in transfer && transfer.progress === 100 && (
                 <div className="flex items-center justify-end mt-2">
                   <button
-                    onClick={() => downloadFile(transfer.id)}
+                    onClick={() => handleDownload(transfer.id)}
                     className="p-1 text-gray-500 hover:text-gray-700"
                     title="Download file"
                   >
@@ -173,6 +180,11 @@ const TransferHistory: React.FC = () => {
           ))}
         </ul>
       </CardContent>
+      {showDownloadToast && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+          Download started!
+        </div>
+      )}
     </Card>
   );
 };
