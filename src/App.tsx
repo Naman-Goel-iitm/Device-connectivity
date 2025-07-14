@@ -139,8 +139,8 @@ function AppContent() {
         <div className="hidden md:block fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
           <Link to="/terms" className="text-sm font-semibold text-white hover:text-blue-300 underline transition-colors">T&amp;C</Link>
         </div>
-        {/* Mobile: normal, left-aligned at the bottom */}
-        <div className="block md:hidden w-full mt-8 px-4">
+        {/* Mobile: absolute, bottom left */}
+        <div className="absolute bottom-4 left-4 z-20 md:hidden">
           <Link to="/terms" className="text-base font-semibold text-white underline">T&amp;C</Link>
         </div>
       </div>
