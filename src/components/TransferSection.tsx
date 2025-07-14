@@ -57,14 +57,6 @@ export const TransferSection: React.FC = () => {
     }
   };
 
-  const handleDownload = (transferId: string) => {
-    // Assuming downloadFile is a function from useTransfer or a similar context
-    // For now, we'll just show a toast and not call a real download function
-    console.log(`Download started for transfer ID: ${transferId}`);
-    setShowDownloadToast(true);
-    setTimeout(() => setShowDownloadToast(false), 2000);
-  };
-
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
