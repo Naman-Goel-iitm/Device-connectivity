@@ -22,7 +22,7 @@ const Instructions: React.FC = () => {
         <p>"Do Annonymous chat, Transfer FIles, share links"</p>
       </div>
       <div className="flex items-start space-x-4">
-        <ShieldCheck className="h-11 w-11 text-white" />
+        <ShieldCheck className="h-11 w-11 md:h-11 md:w-11 text-white" />
         <p>
           <span className="font-bold">"None of your data would be stored or shared anywhere, </span>
            all the chat you do or file you transfer would be store in your RAM and would be clear once you leave the room."
