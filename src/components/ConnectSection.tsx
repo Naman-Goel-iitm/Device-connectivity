@@ -30,13 +30,16 @@ const ConnectSection: React.FC = () => {
   };
 
   const handleJoinRoom = async () => {
-    if (!roomId.trim()) {
+    // Remove all whitespace from the input
+    const sanitizedRoomId = roomId.replace(/\s+/g, '');
+
+    if (!sanitizedRoomId) {
       setError('Please enter a room ID');
       return;
     }
 
     try {
-      await joinRoom(roomId);
+      await joinRoom(sanitizedRoomId);
       setError(null);
     } catch (error) {
       // Show backend error if it's 'Room is full', otherwise show generic error
