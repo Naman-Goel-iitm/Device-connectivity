@@ -134,9 +134,14 @@ function AppContent() {
             </div>
           </main>
         </div>
-        {/* T&C link at the bottom, styled bold and without background strip */}
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
+        {/* T&C link: fixed and centered on desktop, left and at the bottom on mobile */}
+        {/* Desktop: fixed, centered */}
+        <div className="hidden md:block fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
           <Link to="/terms" className="text-sm font-semibold text-white hover:text-blue-300 underline transition-colors">T&amp;C</Link>
+        </div>
+        {/* Mobile: normal, left-aligned at the bottom */}
+        <div className="block md:hidden w-full mt-8 px-4">
+          <Link to="/terms" className="text-base font-semibold text-white underline">T&amp;C</Link>
         </div>
       </div>
     </TransferProvider>
