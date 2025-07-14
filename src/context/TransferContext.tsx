@@ -287,7 +287,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       let aborted = false;
       let retries = 0;
       const MAX_RETRIES = 3;
-      const CHUNK_ACK_TIMEOUT = 10000; // 10 seconds
+      const CHUNK_ACK_TIMEOUT = 30000; // 30 seconds
 
       const sendChunk = async () => {
         if (aborted) return;
