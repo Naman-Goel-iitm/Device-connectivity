@@ -13,6 +13,8 @@ export const TransferSection: React.FC = () => {
   const [isLink, setIsLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleTextSend = async () => {
     if (!text.trim()) return;
@@ -35,6 +37,16 @@ export const TransferSection: React.FC = () => {
   const handleFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
+
+    // Check for file size limit
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > MAX_FILE_SIZE) {
+        setFileError('File too large. Maximum allowed size is 150MB.');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+    }
+    setFileError(null); // Clear error if all files are valid
 
     // Find a receiver that is not the current device
     const receiver = connectionState.devices.find(d => d.socketId !== socket?.id);
@@ -158,6 +170,9 @@ export const TransferSection: React.FC = () => {
         </div>
         {error && (
           <div className="text-red-500 text-sm mt-2 px-4">{error}</div>
+        )}
+        {fileError && (
+          <div className="text-red-500 text-sm mt-2 px-4">{fileError}</div>
         )}
       </CardContent>
     </Card>

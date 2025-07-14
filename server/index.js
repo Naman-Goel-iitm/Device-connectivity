@@ -169,6 +169,14 @@ io.on('connection', (socket) => {
       senderSocketId: socket.id 
     });
 
+    // Enforce 150MB file size limit
+    const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB
+    if (transfer.fileSize > MAX_FILE_SIZE) {
+      console.log('❌ File too large. Rejecting transfer:', transfer.fileName);
+      socket.emit('transfer:error', 'File too large. Maximum allowed size is 150MB.');
+      return;
+    }
+
     // Find the room the sender is in
     const room = Array.from(rooms.values()).find(r => 
       r.devices.some(d => d.socketId === socket.id)
