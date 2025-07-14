@@ -13,7 +13,6 @@ export const TransferSection: React.FC = () => {
   const [isLink, setIsLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [showDownloadToast, setShowDownloadToast] = useState(false);
 
   const handleTextSend = async () => {
     if (!text.trim()) return;
@@ -159,11 +158,6 @@ export const TransferSection: React.FC = () => {
         </div>
         {error && (
           <div className="text-red-500 text-sm mt-2 px-4">{error}</div>
-        )}
-        {showDownloadToast && (
-          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
-            Download started!
-          </div>
         )}
       </CardContent>
     </Card>
