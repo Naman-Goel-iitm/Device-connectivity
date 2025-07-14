@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FileTransfer, TextTransfer, TransferItem } from '../types';
 import { useConnection } from './ConnectionContext';
+import { isMobileDevice } from '../utils/deviceUtils';
 
 interface FileData {
   data: Uint8Array;
@@ -280,7 +281,7 @@ export const TransferProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
 
       // Read and send the file in chunks with flow control and retry
-      const chunkSize = 512 * 1024; // 512KB chunks
+      const chunkSize = isMobileDevice() ? 256 * 1024 : 512 * 1024; // 256KB for mobile, 512KB for desktop
       let offset = 0;
       let chunksSent = 0;
       const totalChunks = Math.ceil(file.size / chunkSize);
