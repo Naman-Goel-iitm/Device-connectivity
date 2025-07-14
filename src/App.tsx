@@ -134,8 +134,9 @@ function AppContent() {
             </div>
           </main>
         </div>
-        <div className="absolute bottom-0 left-0 w-full flex justify-center items-center py-4 bg-white bg-opacity-80 z-20 border-t border-gray-200">
-          <Link to="/terms" className="text-xs text-gray-500 hover:text-blue-600 underline transition-colors">T&amp;C</Link>
+        {/* T&C link at the bottom, styled bold and without background strip */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
+          <Link to="/terms" className="text-sm font-semibold text-gray-600 hover:text-blue-700 underline transition-colors">T&amp;C</Link>
         </div>
       </div>
     </TransferProvider>

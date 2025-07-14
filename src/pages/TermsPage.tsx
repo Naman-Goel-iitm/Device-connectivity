@@ -3,7 +3,7 @@ import React from 'react';
 const TermsPage: React.FC = () => (
   <div className="max-w-2xl mx-auto px-4 py-12 text-gray-800">
     <h1 className="text-3xl font-bold mb-6 text-blue-700">Terms and Conditions</h1>
-    <p className="mb-4 text-sm text-gray-500">Last updated: [DATE]</p>
+    <p className="mb-4 text-sm text-gray-500">Last updated: [14-07-2025]</p>
     <h2 className="text-xl font-semibold mt-6 mb-2">1. Introduction</h2>
     <p className="mb-4">Welcome to Winddrop (“we”, “us”, “our”, or “the Service”). By using our file and text transfer service, you (“user”, “you”, “your”) agree to these Terms and Conditions. Please read them carefully before using the Service.</p>
     <h2 className="text-xl font-semibold mt-6 mb-2">2. Core Principles</h2>
