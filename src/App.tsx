@@ -8,6 +8,8 @@ import Instructions from './components/Instructions';
 import { useState, useEffect, useRef } from 'react';
 import { useConnection } from './context/ConnectionContext';
 import { useShakeBackground } from './hooks/useShakeBackground';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import TermsPage from './pages/TermsPage';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -28,9 +30,14 @@ function App() {
   }
 
   return (
-    <ConnectionProvider>
-      <AppContent />
-    </ConnectionProvider>
+    <Router>
+      <ConnectionProvider>
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/terms" element={<TermsPage />} />
+        </Routes>
+      </ConnectionProvider>
+    </Router>
   );
 }
 
@@ -66,7 +73,7 @@ function AppContent() {
 
   return (
     <TransferProvider>
-      <div className="relative min-h-screen">
+      <div className="relative min-h-screen pb-16"> {/* Add padding for footer */}
         {isMobile ? (
           <div className="absolute inset-0 w-full h-full">
             {/* Current background (fading out) */}
@@ -126,6 +133,9 @@ function AppContent() {
               )}
             </div>
           </main>
+        </div>
+        <div className="absolute bottom-0 left-0 w-full flex justify-center items-center py-4 bg-white bg-opacity-80 z-20 border-t border-gray-200">
+          <Link to="/terms" className="text-xs text-gray-500 hover:text-blue-600 underline transition-colors">T&amp;C</Link>
         </div>
       </div>
     </TransferProvider>
