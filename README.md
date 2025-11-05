@@ -1,4 +1,4 @@
-# Bolt - Real-time File and Text Transfer
+# Real-time File and Text Transfer
 
 A real-time file and text transfer application that allows users to share files and text between devices using WebSocket technology.
 
