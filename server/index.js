@@ -6,32 +6,64 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const allowedOrigins = [
-  // 'http://localhost:5173',                // Local development (removed for production)
-  'https://bolt-frontend-k834.onrender.com', // Render frontend
-  'https://winddrop.tech',                  // Custom domain
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://winddrop.app',
+  'https://www.winddrop.app',
+  'https://winddrop.tech',
   'https://www.winddrop.tech',
-  'http://139.59.38.179:3000',             // DigitalOcean server (HTTP)
-  'https://139.59.38.179:3000',            // DigitalOcean server (HTTPS)
+  'https://bolt-frontend-k834.onrender.com',
+  'http://139.59.38.179:3000',
+  'https://139.59.38.179:3000',
 ];
 
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+const customOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...defaultOrigins, ...customOrigins];
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true; // Server-to-server or tools
+  if (allowedOrigins.includes('*')) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  // Automatically allow any winddrop domain or subdomain (*.winddrop.app)
+  if (/^https:\/\/([a-z0-9-]+\.)*winddrop\.(app|tech)$/.test(origin)) return true;
+  // Automatically allow any Render domain (*.onrender.com)
+  if (/^https:\/\/.*\.onrender\.com$/.test(origin)) return true;
+  // Automatically allow localhost during testing
+  if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  return false;
+};
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (isOriginAllowed(origin)) {
       callback(null, true);
     } else {
+      console.warn('⚠️ Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST'],
-}));
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// Health check and root endpoints
+app.get('/', (req, res) => {
+  res.send('Device Connectivity WebSocket Server is running.');
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-  }
+  cors: corsOptions,
 });
 
 // Store active rooms

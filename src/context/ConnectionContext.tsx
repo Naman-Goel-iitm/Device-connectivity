@@ -22,7 +22,12 @@ const initialState: ConnectionState = {
   isHost: false,
 };
 
-const SOCKET_URL = 'https://winddrop.tech';
+const SOCKET_URL = (
+  import.meta.env.VITE_BACKEND_URL ||
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://winddrop.app')
+).replace(/\/+$/, '');
 
 const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
 

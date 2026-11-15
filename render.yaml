@@ -1,8 +1,22 @@
 services:
-  # Frontend service
+  # Backend Web Service
   - type: web
-    name: bolt-frontend
-    env: static
+    name: device-connect-backend
+    runtime: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://device-connect-frontend.onrender.com
+
+  # Frontend Static Site
+  - type: web
+    name: device-connect-frontend
+    runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     routes:
@@ -11,18 +25,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_BACKEND_URL
-        value: https://bolt-backend.onrender.com
-
-  # Backend service
-  - type: web
-    name: bolt-backend
-    env: node
-    buildCommand: cd server && npm install
-    startCommand: cd server && node index.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 3001
-      - key: CORS_ORIGIN
-        value: https://bolt-frontend.onrender.com 
+        value: https://device-connect-backend.onrender.com
