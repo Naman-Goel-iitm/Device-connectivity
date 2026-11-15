@@ -26,7 +26,7 @@ const SOCKET_URL = (
   import.meta.env.VITE_BACKEND_URL ||
   (typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:3000'
-    : 'https://winddrop.app')
+    : '')
 ).replace(/\/+$/, '');
 
 const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
@@ -42,6 +42,11 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Initialize socket connection with enhanced retry logic
   useEffect(() => {
     const connectSocket = () => {
+      console.log('🌐 Connecting to Socket server at:', SOCKET_URL || 'window.origin');
+
+      if (!SOCKET_URL && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+        console.error('❌ VITE_BACKEND_URL is not configured! Please set VITE_BACKEND_URL in your Render Frontend Environment to your backend service URL.');
+      }
       const newSocket = io(SOCKET_URL, {
         transports: ['polling', 'websocket'], // Try polling first, then WebSocket
         reconnectionAttempts: 3,
